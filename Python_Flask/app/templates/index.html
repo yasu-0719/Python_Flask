@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Pragma" content="no-cache">
+        <meta http-equiv="Cache-Control" content="no-cache">
+        <title>{{title}}</title>
+        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
+    </head>
+    <body>
+    <h1>{{ title }}</h1>
+    <form action="/" method="POST">
+        <input type="submit" value="Submit" name="Submit">
+    </form>
+      {{ table }}
+    </body>
+</html>
