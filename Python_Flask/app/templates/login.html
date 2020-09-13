@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
+    </head>
+    <body>
+    <h1>ログイン画面</h1>
+    <tr class='error_message'>
+        <p>{{ error_message }}</p>
+    </tr>
+    <form action="/" method="POST">
+        ユーザーID：<input type="text" value="" name="user_id">
+        パスワード：<input type="text" value="" name="password">
+        <p><input type="submit" value="ログイン" name="login"></p>
+    </form>
+    </body>
+</html>

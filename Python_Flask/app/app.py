@@ -3,6 +3,7 @@ from flask import Flask, render_template, request
 from flask_table import Table, Col
 import sqlite3
 import pandas as pd
+import sys
 
 #Flaskオブジェクトの生成
 app = Flask(__name__)
@@ -66,6 +67,24 @@ def index():
             table = users_list(df)
             return render_template('users_list.html', table=table)
             
+        # パスワードを確認して、買い物一覧画面に遷移する
+        elif 'login' in request.form:
+            try:
+                df = pd.read_sql_query(sql=u"SELECT password FROM users WHERE user_id ='{user_id}'" .format(
+                                            user_id=request.form['user_id']), con=conn)
+                if len(df) == 0:
+                    raise ValueError("存在しないログインIDです。")
+                elif request.form['password'] != df.iloc[0, 0]:
+                    raise ValueError("パスワードが間違っています。")
+                df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
+                conn.close()
+                table = list_results(df)
+                return render_template('index.html', table=table)
+            
+            except ValueError as e:
+                conn.close()
+                return render_template('login.html', error_message=e)
+            
             
         # 買い物一覧画面に遷移する
         elif 'sales_list' in request.form:
@@ -100,7 +119,7 @@ def index():
                 # 全ての項目に入力がなかった場合、例外発生させる
                 if request.form['name'] == '' or request.form['cost'] == '' or request.form['price'] == '': 
                     raise ValueError("全ての項目に入力してください。")
-                # 入力した値を削除する
+                # 入力した値で更新する
                 c.execute("UPDATE sales SET cost = '{cost}',price = '{price}' where name = '{name}'" .format(
                         name=request.form['name'], cost=request.form['cost'], price=request.form['price']))
                 # 結果を保存（コミット）する
@@ -136,8 +155,9 @@ def index():
     df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
     # データベースへのアクセスが終わったらcloseする
     conn.close()
-    table = list_results(df)
-    return render_template('index.html', table=table)
+    # table = list_results(df)
+    # return render_template('index.html', table=table)
+    return render_template('login.html')
 
 
 def list_results(df):        
@@ -151,9 +171,13 @@ def users_list(df):
     for i in range(len(df.index)):
         items.append(Users(df.iloc[i, 0], df.iloc[i, 1], df.iloc[i, 2]))
     return UsersTable(items)
+    
+
+if __name__ == '__main__':
+    app.run(debug=True)
 
     
-    
+
 
 
 
