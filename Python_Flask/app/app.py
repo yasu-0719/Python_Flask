@@ -1,5 +1,5 @@
 #Flaskとrender_template（HTMLを表示させるための関数）をインポート
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 from flask_table import Table, Col
 import sqlite3
 import pandas as pd
@@ -7,6 +7,8 @@ import sys
 
 #Flaskオブジェクトの生成
 app = Flask(__name__)
+
+app.secret_key = "aaa"
 
 class Sales(object):
     def __init__(self, name, cost, price):
@@ -65,7 +67,7 @@ def index():
             df = pd.read_sql_query(sql=u"SELECT * FROM users", con=conn)
             conn.close()
             table = users_list(df)
-            return render_template('users_list.html', table=table)
+            return render_template('users_list.html', login_user=session["login_user"], table=table)
             
         # パスワードを確認して、買い物一覧画面に遷移する
         elif 'login' in request.form:
@@ -76,14 +78,21 @@ def index():
                     raise ValueError("存在しないログインIDです。")
                 elif request.form['password'] != df.iloc[0, 0]:
                     raise ValueError("パスワードが間違っています。")
+                session["login_user"] = request.form['user_id']
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', table=table)
+                return render_template('index.html', login_user=session["login_user"], table=table)
             
             except ValueError as e:
                 conn.close()
                 return render_template('login.html', error_message=e)
+                
+                
+        # セッション値を削除してログイン画面に遷移する
+        elif 'logout' in request.form:
+            session.pop('user_id', None)
+            return render_template('login.html', error_message="ログアウトしました。")
             
             
         # 買い物一覧画面に遷移する
@@ -91,7 +100,7 @@ def index():
             df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
             conn.close()
             table = list_results(df)
-            return render_template('index.html', table=table)
+            return render_template('index.html', login_user=session["login_user"], table=table)
             
             
         # 画面から入力した値を登録する
@@ -110,7 +119,7 @@ def index():
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', error_message=e, table=table)
+                return render_template('index.html', login_user=session["login_user"], error_message=e, table=table)
                 
                    
         # 画面から入力した値を更新する
@@ -129,7 +138,7 @@ def index():
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', error_message=e, table=table)
+                return render_template('index.html', login_user=session["login_user"], error_message=e, table=table)
                 
                 
         # 画面から入力した値を削除する
@@ -147,7 +156,7 @@ def index():
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', error_message=e, table=table)
+                return render_template('index.html', login_user=session["login_user"], error_message=e, table=table)
 
     elif request.method == 'GET':
         print(request.method)

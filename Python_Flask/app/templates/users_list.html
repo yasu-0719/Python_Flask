@@ -6,7 +6,11 @@
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
     </head>
     <body>
-    <h1>ユーザ一覧</h1>
+    <h1 style="text-align: center">ユーザ一覧</h1>
+    <form action="/" method="POST" style="text-align: right">
+        ログインID：{{ login_user }}
+        <input type="submit" value="ログアウト" name="logout">
+    </form>
     <tr class='error_message'>
         <p>{{ error_message }}</p>
     </tr>
