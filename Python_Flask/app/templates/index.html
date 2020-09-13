@@ -1,21 +1,26 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Pragma" content="no-cache">
-        <meta http-equiv="Cache-Control" content="no-cache">
-        <title>{{title}}</title>
-        <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
     </head>
     <body>
-    <h1>{{ title }}</h1>
+    <h1>商品一覧</h1>
+    <tr class='error_message'>
+        <p>{{ error_message }}</p>
+    </tr>
     <form action="/" method="POST">
-        <input type="submit" value="初期表示" name="Initialize">
+        <input type="submit" value="CSV取込" name="input">
+        <input type="submit" value="CSV出力" name="output">
     </form>
-    <form action="/" method="PUT">
-        <input type="submit" value="登録" name="Submit", method="PUT">
+    <form action="/" method="POST">
         商品名：<input type="text" value="" name="name">
         原価：<input type="text" value="" name="cost">
         売価：<input type="text" value="" name="price">
+        <input type="submit" value="登録" name="register">
+        <input type="submit" value="更新" name="update">
+        <input type="submit" value="削除" name="delete">
     </form>
       {{ table }}
     </body>
