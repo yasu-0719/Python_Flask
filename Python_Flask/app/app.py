@@ -7,16 +7,27 @@ import pandas as pd
 #Flaskオブジェクトの生成
 app = Flask(__name__)
 
-class Item(object):
+class Sales(object):
     def __init__(self, name, cost, price):
         self.name = name
         self.cost = cost
         self.price = price
 
-class ItemTable(Table):
+class SalesTable(Table):
     name = Col('商品名')
     cost = Col('原価')
     price = Col('売価')
+    
+class Users(object):
+    def __init__(self, user_name, user_id, password):
+        self.user_name = user_name
+        self.user_id = user_id
+        self.password = password
+
+class UsersTable(Table):
+    user_name = Col('ユーザー名')
+    user_id = Col('ユーザーID')
+    password = Col('パスワード')
 
 
 @app.route("/", methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -27,7 +38,7 @@ def index():
     c = conn.cursor()
     if request.method == 'POST':
         
-        # 画面をCSVを取り込んだ初期状態に戻す
+        # CSVを取り込んだ結果を画面表示する
         if 'input' in request.form:
              # テーブルの作成
             c.execute('''DROP TABLE IF EXISTS sales''')
@@ -45,7 +56,24 @@ def index():
         # リストをCSVに出力する
         elif 'output' in request.form:
             df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
-            df.to_csv('Python_Flask/app/static/csv/sales_sample.csv', index=False)    
+            df.to_csv('Python_Flask/app/static/csv/sales_sample.csv', index=False) 
+            
+        
+        # ユーザ一覧画面に遷移する
+        elif 'users_list' in request.form:
+            df = pd.read_sql_query(sql=u"SELECT * FROM users", con=conn)
+            conn.close()
+            table = users_list(df)
+            return render_template('users_list.html', table=table)
+            
+            
+        # 買い物一覧画面に遷移する
+        elif 'sales_list' in request.form:
+            df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
+            conn.close()
+            table = list_results(df)
+            return render_template('index.html', table=table)
+            
             
         # 画面から入力した値を登録する
         elif 'register' in request.form:
@@ -115,8 +143,14 @@ def index():
 def list_results(df):        
     items = []
     for i in range(len(df.index)):
-        items.append(Item(df.iloc[i, 0], df.iloc[i, 1], df.iloc[i, 2]))
-    return ItemTable(items)
+        items.append(Sales(df.iloc[i, 0], df.iloc[i, 1], df.iloc[i, 2]))
+    return SalesTable(items)
+    
+def users_list(df):        
+    items = []
+    for i in range(len(df.index)):
+        items.append(Users(df.iloc[i, 0], df.iloc[i, 1], df.iloc[i, 2]))
+    return UsersTable(items)
 
     
     

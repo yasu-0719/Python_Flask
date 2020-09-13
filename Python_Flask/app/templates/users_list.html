@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
+    </head>
+    <body>
+    <h1>ユーザ一覧</h1>
+    <tr class='error_message'>
+        <p>{{ error_message }}</p>
+    </tr>
+    <form action="/" method="POST">
+        <input type="submit" value="買い物一覧" name="sales_list">
+    </form>
+        {{ table }}
+    </body>
+</html>
