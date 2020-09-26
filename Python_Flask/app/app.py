@@ -40,59 +40,11 @@ def index():
     conn = sqlite3.connect('Python_Flask/models/sales.db')
     c = conn.cursor()
     if request.method == 'POST':
-        
-        # CSVを取り込んだ結果を画面表示する
-        if 'input' in request.form:
-             # テーブルの作成
-            c.execute('''DROP TABLE IF EXISTS sales''')
-            c.execute('''CREATE TABLE sales(name text, cost real, price real)''')
-            # CSVをpandasで取得する
-            df = pd.read_csv('Python_Flask/app/static/csv/sales_sample.csv')
-            # INSERT文作成と実行
-            for i in range(len(df.index)):
-                c.execute("INSERT INTO sales VALUES ('{name}', '{cost}', '{price}')" .format(
-                    name=df.iloc[i, 0], cost=df.iloc[i, 1], price=df.iloc[i, 2]))
-            # 登録した結果を保存（コミット）する
-            conn.commit()
             
-        
-        # リストをCSVに出力する
-        elif 'output' in request.form:
-            df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
-            df.to_csv('Python_Flask/app/static/csv/sales_sample.csv', index=False) 
-            
-        
-        # ユーザ一覧画面に遷移する
-        elif 'users_list' in request.form:
-            df = pd.read_sql_query(sql=u"SELECT * FROM users", con=conn)
-            conn.close()
-            table = users_list(df)
-            return render_template('users_list.html', login_user=session["login_user"], table=table)
-            
-        # パスワードを確認して、買い物一覧画面に遷移する
-        elif 'login' in request.form:
-            try:
-                df = pd.read_sql_query(sql=u"SELECT password FROM users WHERE user_id ='{user_id}'" .format(
-                                            user_id=request.form['user_id']), con=conn)
-                if len(df) == 0:
-                    raise ValueError("存在しないログインIDです。")
-                elif request.form['password'] != df.iloc[0, 0]:
-                    raise ValueError("パスワードが間違っています。")
-                session["login_user"] = request.form['user_id']
-                df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
-                conn.close()
-                table = list_results(df)
-                return render_template('index.html', login_user=session["login_user"], table=table)
-            
-            except ValueError as e:
-                conn.close()
-                return render_template('login.html', error_message=e)
-                
-                
         # セッション値を削除してログイン画面に遷移する
-        elif 'logout' in request.form:
+        if 'logout' in request.form:
             session.pop('user_id', None)
-            return render_template('login.html', error_message="ログアウトしました。")
+            return render_template('login.html', message="ログアウトしました。")
             
             
         # 買い物一覧画面に遷移する
@@ -119,7 +71,7 @@ def index():
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', login_user=session["login_user"], error_message=e, table=table)
+                return render_template('index.html', login_user=session["login_user"], message=e, table=table)
                 
                    
         # 画面から入力した値を更新する
@@ -138,7 +90,7 @@ def index():
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', login_user=session["login_user"], error_message=e, table=table)
+                return render_template('index.html', login_user=session["login_user"], message=e, table=table)
                 
                 
         # 画面から入力した値を削除する
@@ -156,7 +108,7 @@ def index():
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
-                return render_template('index.html', login_user=session["login_user"], error_message=e, table=table)
+                return render_template('index.html', login_user=session["login_user"], message=e, table=table)
 
     elif request.method == 'GET':
         print(request.method)
@@ -167,6 +119,77 @@ def index():
     # table = list_results(df)
     # return render_template('index.html', table=table)
     return render_template('login.html')
+    
+
+# ログイン画面処理
+@app.route("/login", methods=['GET', 'POST', 'PUT', 'DELETE'])
+def login():
+    print(request.method)
+    # データベースに接続する
+    conn = sqlite3.connect('Python_Flask/models/sales.db')
+    c = conn.cursor()
+    if request.method == 'POST':
+
+    # パスワードを確認して、買い物一覧画面に遷移する
+        if 'login' in request.form:
+            try:
+                df = pd.read_sql_query(sql=u"SELECT password FROM users WHERE user_id ='{user_id}'" .format(
+                                            user_id=request.form['user_id']), con=conn)
+                if len(df) == 0:
+                    raise ValueError("存在しないログインIDです。")
+                elif request.form['password'] != df.iloc[0, 0]:
+                    raise ValueError("パスワードが間違っています。")
+                session["login_user"] = request.form['user_id']
+                df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
+                conn.close()
+                table = list_results(df)
+                return render_template('index.html', login_user=session["login_user"], table=table)
+            
+            except ValueError as e:
+                conn.close()
+                return render_template('login.html', message=e)
+                
+
+# CSV関連の処理           
+@app.route("/csv", methods=['GET', 'POST', 'PUT', 'DELETE'])
+def csv():
+    print(request.method)
+    # データベースに接続する
+    conn = sqlite3.connect('Python_Flask/models/sales.db')
+    c = conn.cursor()
+    if request.method == 'POST':
+        
+         # CSVを取り込んだ結果を画面表示する
+        if 'input' in request.form:
+             # テーブルの作成
+            c.execute('''DROP TABLE IF EXISTS sales''')
+            c.execute('''CREATE TABLE sales(name text, cost real, price real)''')
+            # CSVをpandasで取得する
+            df = pd.read_csv('Python_Flask/app/static/csv/list.csv')
+            # INSERT文作成と実行
+            for i in range(len(df.index)):
+                c.execute("INSERT INTO sales VALUES ('{name}', '{cost}', '{price}')" .format(
+                    name=df.iloc[i, 0], cost=df.iloc[i, 1], price=df.iloc[i, 2]))
+            # 登録した結果を保存（コミット）する
+            conn.commit()
+            
+        
+        # リストをCSVに出力する
+        elif 'output' in request.form:
+            df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
+            df.to_csv('Python_Flask/app/static/csv/list.csv', index=False) 
+            
+            
+# ユーザ一覧画面への遷移           
+@app.route("/users_list", methods=['GET', 'POST', 'PUT', 'DELETE'])
+def users_list_transit():
+    # データベースに接続する
+    conn = sqlite3.connect('Python_Flask/models/sales.db')
+    df = pd.read_sql_query(sql=u"SELECT * FROM users", con=conn)
+    conn.close()
+    table = users_list(df)
+    # ユーザ一覧画面に遷移する
+    return render_template('users_list.html', login_user=session["login_user"], table=table)
 
 
 def list_results(df):        

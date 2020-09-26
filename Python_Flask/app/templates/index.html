@@ -6,23 +6,25 @@
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
     </head>
     <body>
-    <h1 style="text-align: center">商品一覧</h1>
+    <h1 style="text-align: center">買い物一覧</h1>
     <form action="/" method="POST" style="text-align: right">
         ログインID：{{ login_user }}
         <input type="submit" value="ログアウト" name="logout">
     </form>
-    <tr class='error_message'>
-        <p>{{ error_message }}</p>
+    <tr class='message'>
+        <p>{{ message }}</p>
     </tr>
-    <form action="/" method="POST">
+    <form action="/csv" method="POST">
         <input type="submit" value="CSV取込" name="input">
         <input type="submit" value="CSV出力" name="output">
+    </form>
+    <form action="/users_list" method="POST">
         <input type="submit" value="ユーザ一覧" name="users_list">
     </form>
-    <form action="/" method="POST">
+    <form action="/shopping_list" method="POST">
         商品名：<input type="text" value="" name="name">
-        原価：<input type="text" value="" name="cost">
-        売価：<input type="text" value="" name="price">
+        購入日：<input type="text" value="" name="date">
+        価格：<input type="text" value="" name="price">
         <input type="submit" value="登録" name="register">
         <input type="submit" value="更新" name="update">
         <input type="submit" value="削除" name="delete">
