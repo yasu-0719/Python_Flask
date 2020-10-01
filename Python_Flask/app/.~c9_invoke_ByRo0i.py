@@ -19,7 +19,7 @@ class Sales(object):
 class SalesTable(Table):
     name = Col('商品名')
     date = Col('購入日')
-    price = Col('金額')
+    price = Col('価格')
     
 class Users(object):
     def __init__(self, user_name, user_id, password):
@@ -35,6 +35,7 @@ class UsersTable(Table):
 
 @app.route("/", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def index():
+    
     return render_template('login.html')
     
 
@@ -46,6 +47,7 @@ def login():
     conn = sqlite3.connect('Python_Flask/models/sales.db')
     c = conn.cursor()
     if request.method == 'POST':
+
     # パスワードを確認して、買い物一覧画面に遷移する
         if 'login' in request.form:
             try:
@@ -60,6 +62,7 @@ def login():
                 conn.close()
                 table = list_results(df)
                 return render_template('shopping_list.html', login_user=session["login_user"], table=table)
+            
             except ValueError as e:
                 conn.close()
                 return render_template('login.html', message=e)
@@ -68,9 +71,16 @@ def login():
 # ログアウト処理
 @app.route("/logout", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def logout():
-    # セッション値を削除してログイン画面に遷移する
-        session.pop('user_id', None)
-        return render_template('login.html', message="ログアウトしました。")
+    print(request.method)
+    # データベースに接続する
+    conn = sqlite3.connect('Python_Flask/models/sales.db')
+    c = conn.cursor()
+    if request.method == 'POST':
+            
+        # セッション値を削除してログイン画面に遷移する
+        if 'logout' in request.form:
+            session.pop('user_id', None)
+            return render_template('login.html', message="ログアウトしました。")
                 
 
 # CSV関連の処理           
@@ -81,6 +91,7 @@ def csv():
     conn = sqlite3.connect('Python_Flask/models/sales.db')
     c = conn.cursor()
     if request.method == 'POST':
+        
          # CSVを取り込んだ結果を画面表示する
         if 'input' in request.form:
              # テーブルの作成
@@ -94,15 +105,18 @@ def csv():
                     name=df.iloc[i, 0], date=df.iloc[i, 1], price=df.iloc[i, 2]))
             # 登録した結果を保存（コミット）する
             conn.commit()
+            
+        
         # リストをCSVに出力する
         elif 'output' in request.form:
             df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
             df.to_csv('Python_Flask/app/static/csv/list.csv', index=False) 
+            
+            
     df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
     conn.close()
     table = list_results(df)
     return render_template('shopping_list.html', login_user=session["login_user"], table=table)
-  
             
 # データの登録、更新、削除           
 @app.route("/register_shopping_list", methods=['GET', 'POST', 'PUT', 'DELETE'])
@@ -112,6 +126,7 @@ def register_shopping_list():
     conn = sqlite3.connect('Python_Flask/models/sales.db')
     c = conn.cursor()
     if request.method == 'POST':
+        
         # 画面から入力した値を登録する
         if 'register' in request.form:
             try:
@@ -123,11 +138,14 @@ def register_shopping_list():
                 name=request.form['name'], date=request.form['date'], price=request.form['price']))
                 # 結果を保存（コミット）する
                 conn.commit()
+                
             except ValueError as e:
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
                 return render_template('shopping_list.html', login_user=session["login_user"], message=e, table=table)
+                
+                   
         # 画面から入力した値を更新する
         elif 'update' in request.form:
             try:
@@ -139,11 +157,14 @@ def register_shopping_list():
                         name=request.form['name'], date=request.form['date'], price=request.form['price']))
                 # 結果を保存（コミット）する
                 conn.commit()
+                
             except ValueError as e:
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
                 return render_template('shopping_list.html', login_user=session["login_user"], message=e, table=table)
+                
+                
         # 画面から入力した値を削除する
         elif 'delete' in request.form:
             try:
@@ -154,42 +175,42 @@ def register_shopping_list():
                 c.execute("DELETE FROM sales WHERE name = '{name}'" .format(name=request.form['name']))
                 # 結果を保存（コミット）する
                 conn.commit()
+                
             except ValueError as e:
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
                 conn.close()
                 table = list_results(df)
                 return render_template('shopping_list.html', login_user=session["login_user"], message=e, table=table)
+                
+                
     df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
     conn.close()
     table = list_results(df)
     return render_template('shopping_list.html', login_user=session["login_user"], table=table)
             
-   
-# 画面遷移処理           
-@app.route("/transit", methods=['GET', 'POST', 'PUT', 'DELETE'])
-def transit():
-    if 'login' in request.form:
-        # ログイン画面に遷移する
-        return render_template('login.html')      
-    elif 'users_registration' in request.form:
-        # ユーザー登録画面に遷移する
-        return render_template('users_registration.html')      
-    elif 'users_list' in request.form:
-        # データベースに接続する
-        conn = sqlite3.connect('Python_Flask/models/sales.db')
-        df = pd.read_sql_query(sql=u"SELECT * FROM users", con=conn)
-        conn.close()
-        table = users_list(df)
-        # ユーザ一覧画面に遷移する
-        return render_template('users_list.html', login_user=session["login_user"], table=table)
-    elif 'users_list' in request.form:
-        # データベースに接続する
-        conn = sqlite3.connect('Python_Flask/models/sales.db')
-        df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
-        conn.close()
-        table = users_list(df)
-        # 買い物一覧画面に遷移する
-        return render_template('shopping_list.html', login_user=session["login_user"], table=table)
+            
+# ユーザ一覧画面への遷移           
+@app.route("/users_list", methods=['GET', 'POST', 'PUT', 'DELETE'])
+def users_list_transit():
+    # データベースに接続する
+    conn = sqlite3.connect('Python_Flask/models/sales.db')
+    df = pd.read_sql_query(sql=u"SELECT * FROM users", con=conn)
+    conn.close()
+    table = users_list(df)
+    # ユーザ一覧画面に遷移する
+    return render_template('users_list.html', login_user=session["login_user"], table=table)
+    
+    
+# 買い物一覧画面への遷移           
+@app.route("/shopping_list", methods=['GET', 'POST', 'PUT', 'DELETE'])
+def shopping_list_transit():
+    # データベースに接続する
+    conn = sqlite3.connect('Python_Flask/models/sales.db')
+    df = pd.read_sql_query(sql=u"SELECT * FROM sales", con=conn)
+    conn.close()
+    table = users_list(df)
+    # 買い物一覧画面に遷移する
+    return render_template('shopping_list.html', login_user=session["login_user"], table=table)
 
 
 def list_results(df):        
@@ -204,3 +225,6 @@ def users_list(df):
         items.append(Users(df.iloc[i, 0], df.iloc[i, 1], df.iloc[i, 2]))
     return UsersTable(items)
     
+
+if __name__ == '__main__':
+    app.run(debug=True)

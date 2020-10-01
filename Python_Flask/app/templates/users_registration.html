@@ -10,6 +10,9 @@
     <tr class='message'>
         <p>{{ message }}</p>
     </tr>
+    <form action="/transit" method="POST">
+        <input type="submit" value="ログイン画面" name="login">
+    </form>
     <form action="/register" method="POST" style="text-align: center">
         ユーザー名：<input type="text" value="" name="user_name">
         ユーザーID：<input type="text" value="" name="user_id">

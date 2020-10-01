@@ -3,3 +3,4 @@ window.onload = function () {
 
     e.style.color = 'blue';
 }
+
