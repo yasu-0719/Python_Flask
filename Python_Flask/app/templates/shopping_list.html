@@ -4,24 +4,30 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Cache-Control" content="no-cache">
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
+    <script>
+    function check(){
+        return confirm("ユーザー登録を解除します。よろしいですか？");
+    }
+    </script>
     </head>
     <body>
     <h1 style="text-align: center">買い物一覧</h1>
-    <form action="/logout" method="POST" style="text-align: right">
-        ログインID：{{ login_user }}
-        <input type="submit" value="ログアウト" name="logout">
+    <tr style="text-align:left;">ログインID：{{ login_user }}</tr>
+    <form action="/logout" method="POST" style="text-align:right;">
+        <input type="submit" value="ログアウト" name="logout" style="height:30px;width:100px;">
+        <input type="submit" value="ユーザー登録解除" name="cancel_user_registration" onclick="return check()" style="height:30px;width:150px;">
     </form>
     <tr class='message'>
         <p>{{ message }}</p>
     </tr>
     <form action="/csv" method="POST">
-        <input type="submit" value="CSV取込" name="input">
-        <input type="submit" value="CSV出力" name="output">
+        <input type="submit" value="CSV取込" name="input" style="height:30px;width:100px;">
+        <input type="submit" value="CSV出力" name="output" style="height:30px;width:100px;">
     </form>
-    <form action="/transit" method="POST">
-        <input type="submit" value="ユーザ一覧" name="users_list">
+    <form action="/transit" method="POST" style="text-align:right;">
+        <input type="submit" value="ユーザ一覧画面" name="users_list" style="height:30px;width:150px;">
     </form>
-    <form action="/register_shopping_list" method="POST">
+    <form action="/register_shopping_list" method="POST" style="text-align:center;">
         商品名：<input type="text" value="" name="name">
         購入日：<input type="text" id="datepicker" value="" name="date">
         金額：<input type="text" value="" name="price">
@@ -29,6 +35,8 @@
         <input type="submit" value="更新" name="update">
         <input type="submit" value="削除" name="delete">
     </form>
-      {{ table }}
+    <tr style="text-align:center;">
+        <p>{{ table }}</p>
+    </tr>
     </body>
 </html>

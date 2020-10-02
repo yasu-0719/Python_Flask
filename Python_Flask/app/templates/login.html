@@ -6,19 +6,17 @@
     <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='index.css') }}"/>
     </head>
     <body>
-    <h1 style="text-align: center">ログイン画面</h1>
+    <h1 style="text-align:center;">ログイン画面</h1>
     <tr class='message'>
         <p>{{ message }}</p>
     </tr>
-    <form action="/transit" method="POST">
-        <input type="submit" value="ユーザー登録" name="users_register">
+    <form action="/transit" method="POST" style="text-align:right;">
+        <input type="submit" value="ユーザー登録画面" name="users_register" style="height:30px;width:150px;">
     </form>
-    <form action="/login" method="POST" style="text-align: center">
-        ユーザーID：<input type="text" value="" name="user_id">
-        パスワード：<input type="text" value="" name="password">
-        <p>
-            <input type="submit" value="ログイン" name="login" style="text-align: center">
-        </p>
+    <form action="/login" method="POST" style="text-align:center;">
+        <p>ユーザーID：<input type="text" value="" name="user_id"></p>
+        <p>パスワード：<input type="text" value="" name="password"></p>
+        <p><input type="submit" value="ログイン" name="login" style="text-align:center;height:30px;width:70px;"></p>
     </form>
     </body>
 </html>
