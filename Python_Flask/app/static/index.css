@@ -6,7 +6,6 @@ table {
    font-family: "メイリオ", sans-serif;/* フォントのスタイルを指定する */
    color: #000000;      /* フォントの色を指定する */
    width: 80%;  /* テーブルの横幅を指定する */
-   margin: 20%;
  }
  td, th {
   border: 1px solid #000000;   /* 境界線を実線で指定する */

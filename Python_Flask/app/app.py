@@ -5,6 +5,8 @@ import sqlite3
 import pandas as pd
 import sys
 import re
+import os
+import hashlib
 
 #Flaskオブジェクトの生成
 app = Flask(__name__)
@@ -50,7 +52,7 @@ def login():
         user_id=request.form['user_id']), con=conn)
         if len(df) == 0:
             raise ValueError("存在しないログインIDです。")
-        elif request.form['password'] != df.iloc[0, 0]:
+        elif hashlib.sha256(request.form['password'].encode('utf-8')).hexdigest() != df.iloc[0, 0]:
             raise ValueError("パスワードが間違っています。")
         # セッションにログインIDを保持する
         session["login_user"] = request.form['user_id']
@@ -86,9 +88,14 @@ def user_register():
         # ユーザーIDとパスワードに半角英字が含まれているかチェック
         elif not _has_lower_letter(str(request.form['user_id'])) or not _has_lower_letter(str(request.form['password'])): 
             raise ValueError("ユーザーIDとパスワードは半角英字を入れてください。")
+        # パスワードのハッシュ化
+        hashed_pw = hashlib.sha256(request.form['password'].encode('utf-8')).hexdigest()
         # 入力した値を登録する
         c.execute("INSERT INTO users VALUES ('{user_name}', '{user_id}', '{password}')" .format(
-                        user_name=request.form['user_name'], user_id=request.form['user_id'], password=request.form['password']))
+                        user_name=request.form['user_name'], user_id=request.form['user_id'], password=hashed_pw))
+        if not os.path.isdir('Python_Flask/app/static/csv/' + request.form['user_id']):
+            # ユーザーごとのCSVフォルダを作成する
+            os.mkdir('Python_Flask/app/static/csv/' + request.form['user_id'])
         # 登録した結果を保存（コミット）する
         conn.commit()
         conn.close()
@@ -130,27 +137,27 @@ def csv():
     if request.method == 'POST':
          # CSVを取り込んだ結果を画面表示する
         if 'input' in request.form:
-             # テーブルの作成
-            c.execute('''DROP TABLE IF EXISTS sales''')
-            c.execute('''CREATE TABLE sales(user_id text, name text, date text, price real)''')
+            c.execute("DELETE FROM sales WHERE user_id = '{user_id}'" .format(user_id=str(session["login_user"])))
             # CSVをpandasで取得する
-            df = pd.read_csv('Python_Flask/app/static/csv/list.csv')
+            df = pd.read_csv('Python_Flask/app/static/csv/' + str(session["login_user"]) + '/' + str(session["login_user"]) + '.csv')
             # INSERT文作成と実行
             for i in range(len(df.index)):
                 c.execute("INSERT INTO sales VALUES ('{user_id}', '{name}', '{date}', '{price}')" .format(
-                            user_id=df.iloc[i, 0], name=df.iloc[i, 1], date=df.iloc[i, 2], price=df.iloc[i, 3]))
+                            user_id=str(session["login_user"]), name=df.iloc[i, 0], date=df.iloc[i, 1], price=df.iloc[i, 2]))
             # 登録した結果を保存（コミット）する
             conn.commit()
+            e = 'CSVの取り込みが完了しました。'
         # リストをCSVに出力する
         elif 'output' in request.form:
-            df = pd.read_sql_query(sql=u"SELECT * FROM sales WHERE user_id = '{user_id}'" .format(
+            df = pd.read_sql_query(sql=u"SELECT name, date, price FROM sales WHERE user_id = '{user_id}'" .format(
                                                 user_id=str(session["login_user"])), con=conn)
-            df.to_csv('Python_Flask/app/static/csv/list.csv', index=False) 
+            df.to_csv('Python_Flask/app/static/csv/' + str(session["login_user"]) + '/' + str(session["login_user"]) + '.csv', index=False)
+            e = 'CSVの保存が完了しました。'
     df = pd.read_sql_query(sql=u"SELECT * FROM sales WHERE user_id = '{user_id}'" .format(
                                                 user_id=str(session["login_user"])), con=conn)
     conn.close()
     table = shopping_list(df)
-    return render_template('shopping_list.html', login_user=session["login_user"], table=table)
+    return render_template('shopping_list.html', login_user=session["login_user"], message=e, table=table)
   
             
 # データの登録、更新、削除           
@@ -171,6 +178,7 @@ def register_shopping_list():
                 user_id=str(session["login_user"]), name=request.form['name'], date=request.form['date'], price=request.form['price']))
                 # 結果を保存（コミット）する
                 conn.commit()
+                e = '商品名：「' + request.form['name'] + '」の登録が完了しました。'
             except ValueError as e:
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales WHERE user_id = '{user_id}'" .format(
                                                 user_id=str(session["login_user"])), con=conn)
@@ -188,6 +196,7 @@ def register_shopping_list():
                 user_id=str(session["login_user"]), name=request.form['name'], date=request.form['date'], price=request.form['price']))
                 # 結果を保存（コミット）する
                 conn.commit()
+                e = '商品名：「' + request.form['name'] + '」の更新が完了しました。'
             except ValueError as e:
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales WHERE user_id = '{user_id}'" .format(
                                                 user_id=str(session["login_user"])), con=conn)
@@ -197,7 +206,7 @@ def register_shopping_list():
         # 画面から入力した値を削除する
         elif 'delete' in request.form:
             try:
-                # 削除する商品名に入力がなかった場合、例外発生させる
+                # 削除する商品名と購入日に入力がなかった場合、例外発生させる
                 if request.form['name'] == '' or request.form['date'] == '': 
                     raise ValueError("削除する商品名と購入日を入力してください。")
                 # 入力した値を削除する
@@ -205,6 +214,7 @@ def register_shopping_list():
                             user_id=str(session["login_user"]), name=request.form['name'], date=request.form['date']))
                 # 結果を保存（コミット）する
                 conn.commit()
+                e = '商品名:「' + request.form['name'] + '」の削除が完了しました。'
             except ValueError as e:
                 df = pd.read_sql_query(sql=u"SELECT * FROM sales WHERE user_id = '{user_id}'" .format(
                                                 user_id=str(session["login_user"])), con=conn)
@@ -215,7 +225,7 @@ def register_shopping_list():
                                                 user_id=str(session["login_user"])), con=conn)
     conn.close()
     table = shopping_list(df)
-    return render_template('shopping_list.html', login_user=session["login_user"], table=table)
+    return render_template('shopping_list.html', login_user=session["login_user"], message=e, table=table)
             
    
 # 画面遷移処理           
