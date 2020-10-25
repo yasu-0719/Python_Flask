@@ -40,7 +40,7 @@ def index():
     return render_template('login.html')
     
 
-# ログイン
+# ログイン処理
 @app.route("/login", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def login():
     # データベースに接続する
@@ -66,7 +66,7 @@ def login():
         return render_template('login.html', message=e)
         
         
-# ユーザー登録
+# ユーザー登録処理
 @app.route("/user_register", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def user_register():
     # データベースに接続する
@@ -105,7 +105,7 @@ def user_register():
         return render_template('users_registration.html', message=e)
                 
                 
-# ログアウトまたはユーザー解除
+# ログアウトまたはユーザー解除処理
 @app.route("/logout", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def logout():
     if 'logout' in request.form:
@@ -128,7 +128,7 @@ def logout():
         return render_template('login.html', message="ID：" + logout_user + "さんの登録を解除しました。")
                 
 
-# CSV関連        
+# CSV関連の処理           
 @app.route("/csv", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def csv():
     # データベースに接続する
@@ -228,7 +228,7 @@ def register_shopping_list():
     return render_template('shopping_list.html', login_user=session["login_user"], message=e, table=table)
             
    
-# 画面遷移           
+# 画面遷移処理           
 @app.route("/transit", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def transit():
     if 'login' in request.form:
