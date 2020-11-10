@@ -106,6 +106,7 @@ def user_register():
                 
                 
 # ログアウトまたはユーザー解除
+# テスト
 @app.route("/logout", methods=['GET', 'POST', 'PUT', 'DELETE'])
 def logout():
     if 'logout' in request.form:
